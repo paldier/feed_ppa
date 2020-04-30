@@ -10,7 +10,7 @@ PKG_RELEASE=$(PKG_SOURCE_VERSION)
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=ssh://git@gts-chd.intel.com:29418/sw_ugw/ppa_drv.git
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
-PKG_SOURCE_VERSION:=2212e8cb71b2bffea9f4cbbd7fba52285e5fdba3
+PKG_SOURCE_VERSION:=890ad290019f82f3763da7dff524fe327a9ec3fc
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION)-$(PKG_SOURCE_VERSION).tar.gz
 PKG_MAINTAINER:=Intel
 
@@ -68,7 +68,7 @@ define KernelPackage/ppa-drv
  FILES:= \
 	$(PKG_BUILD_DIR)/src/ppa_api/ppa_api.ko
 
- AUTOLOAD:=$(call AutoProbe,ppa_api)
+ AUTOLOAD:=$(call AutoProbe, ppa_api)
  MENU:=1
 endef
 
@@ -386,6 +386,26 @@ define KernelPackage/litepath-hwacc/description
  Kernel support for tcp litepath hw acceleration
 endef
 
+define KernelPackage/phy-err-counter
+  SUBMENU:=Intel
+  TITLE:=Intel Phy Err Counter Support
+  DEPENDS:=@TARGET_intel_mips_xrx500 +kmod-intel_eth_xrx500_fw
+  KCONFIG:= \
+	CONFIG_PHY_ERR_CTR=m
+  FILES:= \
+	$(PKG_BUILD_DIR)/src/platform/xrx500/phy_err_counter.ko
+
+  AUTOLOAD:=$(call AutoProbe,xrx500_phy_fw phy_err_counter)
+endef
+
+$(eval $(call add_ppa_config,phy-err-counter, \
+	CONFIG_PHY_ERR_CTR \
+))
+
+define KernelPackage/phy-err-counter/description
+ Kernel support for phy level code violated packets
+endef
+
 #############################################################################
 PKG_EXTRA_CFLAGS := $(patsubst CONFIG_%, -DCONFIG_%=1, $(patsubst %=m,%,$(filter %=m,$(PKG_EXTRA_KCONFIG))))
 
@@ -443,4 +463,5 @@ $(eval $(call KernelPackage,ppa-drv-stack-al))
 $(eval $(call KernelPackage,mac-violation-mirror))
 $(eval $(call KernelPackage,ipv4-ipv6-counter-support))
 $(eval $(call KernelPackage,litepath-hwacc))
+$(eval $(call KernelPackage,phy-err-counter))
 $(eval $(call BuildPackage,ppacmd))
